@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guía Interactiva — Desarrollo de Apps Móviles</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f4ff;
+    --surface: #ffffff;
+    --border: #e5e0f8;
+    --border-strong: #c9c0f0;
+    --p1: #7c5cbf;
+    --p1-light: #ede8fb;
+    --p1-mid: #b09de0;
+    --p2: #2e86c1;
+    --p2-light: #ddeef8;
+    --p2-mid: #85bde0;
+    --p3: #1a9e75;
+    --p3-light: #d4f2e8;
+    --p3-mid: #5dcaa5;
+    --text: #2d2540;
+    --text-mid: #6b5f88;
+    --text-light: #a090c0;
+    --ok: #1a9e75; --ok-bg: #d4f2e8;
+    --err: #d05050; --err-bg: #fde8e8;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { background:var(--bg); color:var(--text); font-family:'Nunito Sans',sans-serif; font-size:15px; }
+
+  .progress-bar-wrap { position:fixed; top:0; left:0; right:0; height:4px; background:var(--border); z-index:300; }
+  .progress-bar { height:100%; background:linear-gradient(90deg,var(--p1),var(--p2),var(--p3)); width:0%; transition:width .2s; border-radius:0 2px 2px 0; }
+
+  .hero { background:linear-gradient(135deg,#1a1040 0%,#2d1a6e 50%,#1a3a60 100%); padding:5rem 2rem 4rem; text-align:center; position:relative; overflow:hidden; }
+  .hero::before { content:''; position:absolute; inset:0; background-image:radial-gradient(circle at 20% 50%,rgba(124,92,191,.3) 0%,transparent 50%),radial-gradient(circle at 80% 20%,rgba(46,134,193,.3) 0%,transparent 40%),radial-gradient(circle at 60% 80%,rgba(26,158,117,.2) 0%,transparent 40%); }
+  .hero-emoji { font-size:3.5rem; display:block; margin-bottom:1rem; position:relative; animation:floaty 3s ease-in-out infinite; }
+  @keyframes floaty { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  .hero h1 { font-family:'Nunito',sans-serif; font-size:clamp(2rem,5vw,3.2rem); font-weight:900; color:#fff; position:relative; line-height:1.15; margin-bottom:.75rem; }
+  .hero h1 .accent { color:#b09de0; }
+  .hero p { color:rgba(255,255,255,.65); font-size:1rem; position:relative; max-width:480px; margin:0 auto 2rem; line-height:1.7; }
+  .hero-pills { display:flex; gap:.6rem; justify-content:center; flex-wrap:wrap; position:relative; }
+  .hero-pill { background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2); color:#fff; padding:.4rem 1rem; border-radius:2rem; font-family:'Nunito',sans-serif; font-weight:700; font-size:.85rem; }
+
+  .score-panel { position:fixed; bottom:1.5rem; right:1.5rem; background:var(--surface); border:2px solid var(--border-strong); border-radius:1.5rem; padding:.6rem 1.2rem; display:flex; align-items:center; gap:.6rem; z-index:200; box-shadow:0 4px 20px rgba(124,92,191,.15); font-family:'Nunito',sans-serif; }
+  .score-icon { font-size:1.2rem; }
+  .score-label { font-size:.75rem; color:var(--text-mid); font-weight:600; }
+  .score-val { font-size:1.1rem; font-weight:900; color:var(--p1); }
+
+  .nav { position:sticky; top:0; z-index:100; background:var(--surface); border-bottom:2px solid var(--border); display:flex; gap:.25rem; padding:0 1.5rem; overflow-x:auto; scrollbar-width:none; box-shadow:0 2px 12px rgba(124,92,191,.08); }
+  .nav::-webkit-scrollbar { display:none; }
+  .nav-btn { flex-shrink:0; padding:.85rem 1.2rem; background:none; border:none; font-family:'Nunito',sans-serif; font-size:.85rem; font-weight:700; color:var(--text-light); cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-2px; transition:all .2s; white-space:nowrap; }
+  .nav-btn:hover { color:var(--text-mid); }
+  .nav-btn.p1.active { color:var(--p1); border-bottom-color:var(--p1); }
+  .nav-btn.p2.active { color:var(--p2); border-bottom-color:var(--p2); }
+  .nav-btn.p3.active { color:var(--p3); border-bottom-color:var(--p3); }
+
+  .main { max-width:860px; margin:0 auto; padding:3rem 1.25rem 6rem; }
+
+  .parcial-header { display:flex; align-items:center; gap:.85rem; margin:3.5rem 0 1.5rem; padding-bottom:1.25rem; border-bottom:2px dashed var(--border-strong); }
+  .parcial-icon { width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0; }
+  .icon-p1{background:var(--p1-light)} .icon-p2{background:var(--p2-light)} .icon-p3{background:var(--p3-light)}
+  .parcial-header h2 { font-family:'Nunito',sans-serif; font-size:1.3rem; font-weight:900; }
+  .parcial-header small { display:block; font-size:.8rem; font-weight:600; margin-bottom:.15rem; }
+  .sm-p1{color:var(--p1)} .sm-p2{color:var(--p2)} .sm-p3{color:var(--p3)}
+
+  .q-card { background:var(--surface); border:2px solid var(--border); border-radius:16px; margin-bottom:1rem; overflow:hidden; transition:border-color .25s,box-shadow .25s,transform .3s,opacity .3s; opacity:0; transform:translateY(14px); cursor:pointer; }
+  .q-card.in-view { opacity:1; transform:translateY(0); }
+  .q-card:hover { border-color:var(--border-strong); box-shadow:0 4px 18px rgba(124,92,191,.1); }
+  .q-card.open.p1-card{border-color:var(--p1-mid)} .q-card.open.p2-card{border-color:var(--p2-mid)} .q-card.open.p3-card{border-color:var(--p3-mid)}
+  .q-header { display:flex; align-items:flex-start; gap:.85rem; padding:1.1rem 1.25rem; }
+  .q-num { font-family:'Nunito',sans-serif; font-size:.75rem; font-weight:900; padding:.25rem .55rem; border-radius:8px; flex-shrink:0; margin-top:.1rem; }
+  .nm-p1{background:var(--p1-light);color:var(--p1)} .nm-p2{background:var(--p2-light);color:var(--p2)} .nm-p3{background:var(--p3-light);color:var(--p3)}
+  .q-text { flex:1; font-weight:600; font-size:.95rem; line-height:1.5; }
+  .q-toggle { width:28px; height:28px; border-radius:50%; background:var(--bg); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1rem; color:var(--text-light); transition:all .3s; }
+  .q-card.open .q-toggle { transform:rotate(45deg); }
+  .q-card.open.p1-card .q-toggle{background:var(--p1);border-color:var(--p1);color:#fff}
+  .q-card.open.p2-card .q-toggle{background:var(--p2);border-color:var(--p2);color:#fff}
+  .q-card.open.p3-card .q-toggle{background:var(--p3);border-color:var(--p3);color:#fff}
+  .q-body { display:none; padding:0 1.25rem 1.25rem 3.3rem; }
+  .q-card.open .q-body { display:block; }
+
+  .answer-text { font-size:.9rem; line-height:1.75; color:var(--text-mid); }
+  .answer-text strong { color:var(--text); }
+  .answer-box { background:var(--bg); border:2px solid var(--border); border-left-width:4px; border-radius:0 12px 12px 0; padding:.85rem 1rem; margin-top:.75rem; font-size:.9rem; line-height:1.75; color:var(--text-mid); }
+  .answer-box strong{color:var(--text)}
+  .bx-p1{border-left-color:var(--p1)} .bx-p2{border-left-color:var(--p2)} .bx-p3{border-left-color:var(--p3)}
+  code { background:var(--p1-light); color:var(--p1); padding:.15rem .45rem; border-radius:6px; font-size:.85em; font-family:'Courier New',monospace; font-weight:700; }
+
+  .chip-row { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.75rem; }
+  .chip { font-size:.75rem; font-weight:700; padding:.25rem .75rem; border-radius:2rem; border:1.5px solid var(--border); color:var(--text-mid); }
+  .ch-p1{background:var(--p1-light);border-color:var(--p1-mid);color:var(--p1)}
+  .ch-p2{background:var(--p2-light);border-color:var(--p2-mid);color:var(--p2)}
+  .ch-p3{background:var(--p3-light);border-color:var(--p3-mid);color:var(--p3)}
+
+  .mc-options { display:flex; flex-direction:column; gap:.5rem; margin-top:.75rem; }
+  .mc-opt { display:flex; align-items:flex-start; gap:.75rem; padding:.75rem 1rem; border-radius:12px; border:2px solid var(--border); background:var(--bg); cursor:pointer; transition:all .2s; text-align:left; width:100%; font-family:'Nunito Sans',sans-serif; font-size:.875rem; color:var(--text); font-weight:600; }
+  .mc-opt:hover { border-color:var(--p1-mid); background:var(--p1-light); }
+  .mc-letter { font-family:'Nunito',sans-serif; font-size:.7rem; font-weight:900; background:var(--surface); border:2px solid var(--border); border-radius:8px; padding:.15rem .5rem; flex-shrink:0; transition:all .2s; color:var(--text-mid); }
+  .mc-opt.correct{border-color:var(--ok);background:var(--ok-bg)} .mc-opt.correct .mc-letter{background:var(--ok);border-color:var(--ok);color:#fff}
+  .mc-opt.wrong{border-color:var(--err);background:var(--err-bg)} .mc-opt.wrong .mc-letter{background:var(--err);border-color:var(--err);color:#fff}
+  .mc-feedback { margin-top:.6rem; font-family:'Nunito',sans-serif; font-weight:700; font-size:.82rem; padding:.5rem .9rem; border-radius:10px; display:none; border:2px solid; }
+  .mc-feedback.show{display:block}
+  .mc-feedback.ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok)}
+  .mc-feedback.fail{background:var(--err-bg);color:var(--err);border-color:var(--err)}
+  .mc-reset { margin-top:.5rem; background:none; border:2px solid var(--border); color:var(--text-light); font-family:'Nunito',sans-serif; font-weight:700; font-size:.75rem; padding:.3rem .8rem; border-radius:8px; cursor:pointer; transition:all .2s; display:none; }
+  .mc-reset:hover{border-color:var(--p1-mid);color:var(--p1);background:var(--p1-light)}
+  .mc-reset.show{display:inline-block}
+
+  .tf-wrap { margin-top:.75rem; display:flex; flex-direction:column; gap:.5rem; }
+  .tf-row { display:flex; align-items:flex-start; gap:.75rem; padding:.7rem .9rem; background:var(--bg); border:2px solid var(--border); border-radius:12px; font-size:.875rem; line-height:1.5; }
+  .tf-index { font-family:'Nunito',sans-serif; font-weight:900; font-size:.7rem; background:var(--surface); border:1.5px solid var(--border); border-radius:6px; padding:.15rem .45rem; flex-shrink:0; color:var(--text-light); margin-top:.1rem; }
+  .tf-text { flex:1; color:var(--text-mid); font-weight:600; }
+  .tf-btns { display:flex; gap:.4rem; flex-shrink:0; }
+  .tf-btn { padding:.25rem .65rem; border-radius:8px; border:2px solid var(--border); background:var(--surface); font-family:'Nunito',sans-serif; font-weight:900; font-size:.75rem; cursor:pointer; color:var(--text-light); transition:all .2s; }
+  .tf-btn:hover{border-color:var(--p1-mid);color:var(--p1);background:var(--p1-light)}
+  .tf-btn.correct{background:var(--ok-bg);color:var(--ok);border-color:var(--ok)}
+  .tf-btn.wrong{background:var(--err-bg);color:var(--err);border-color:var(--err)}
+
+  .fnf-list { margin-top:.75rem; display:flex; flex-direction:column; gap:.5rem; }
+  .fnf-item { display:flex; align-items:center; gap:.75rem; padding:.65rem .9rem; background:var(--bg); border:2px solid var(--border); border-radius:12px; font-size:.875rem; line-height:1.5; }
+  .fnf-text { flex:1; color:var(--text-mid); font-weight:600; }
+  .fnf-btns { display:flex; gap:.35rem; flex-shrink:0; }
+  .fnf-btn { padding:.25rem .65rem; border-radius:8px; border:2px solid var(--border); background:var(--surface); font-family:'Nunito',sans-serif; font-weight:900; font-size:.75rem; cursor:pointer; color:var(--text-light); transition:all .2s; }
+  .fnf-btn:hover{border-color:var(--p2-mid);color:var(--p2);background:var(--p2-light)}
+  .fnf-btn.correct{background:var(--ok-bg);color:var(--ok);border-color:var(--ok)}
+  .fnf-btn.wrong{background:var(--err-bg);color:var(--err);border-color:var(--err)}
+
+  .steps { margin-top:.75rem; display:flex; flex-direction:column; gap:.5rem; }
+  .step { display:flex; gap:.9rem; align-items:flex-start; opacity:0; transform:translateX(-8px); transition:opacity .35s,transform .35s; }
+  .step.visible{opacity:1;transform:translateX(0)}
+  .step-n { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-family:'Nunito',sans-serif; font-weight:900; font-size:.75rem; }
+  .sn-p1{background:var(--p1-light);color:var(--p1)} .sn-p2{background:var(--p2-light);color:var(--p2)} .sn-p3{background:var(--p3-light);color:var(--p3)}
+  .step-text { font-size:.88rem; line-height:1.65; color:var(--text-mid); padding-top:.3rem; }
+  .step-label { font-weight:800; color:var(--text); }
+
+  .comp-table { width:100%; border-collapse:collapse; margin-top:.75rem; font-size:.82rem; border-radius:12px; overflow:hidden; border:2px solid var(--border); }
+  .comp-table th { background:var(--bg); padding:.6rem .85rem; text-align:left; font-family:'Nunito',sans-serif; font-weight:800; font-size:.75rem; color:var(--text-mid); border-bottom:2px solid var(--border); }
+  .comp-table td { padding:.6rem .85rem; border-bottom:1.5px solid var(--border); line-height:1.5; vertical-align:top; color:var(--text-mid); }
+  .comp-table tr:last-child td{border-bottom:none}
+  .comp-table tr:hover td{background:var(--bg)}
+
+  .dual-cards { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-top:.75rem; }
+  @media(max-width:560px){.dual-cards{grid-template-columns:1fr}}
+  .dual-card { background:var(--bg); border:2px solid var(--border); border-radius:12px; padding:.9rem 1rem; }
+  .dual-card-title { font-family:'Nunito',sans-serif; font-size:.7rem; font-weight:900; letter-spacing:.05em; margin-bottom:.5rem; }
+  .dc-p1{color:var(--p1)} .dc-p2{color:var(--p2)}
+  .dual-card-text { font-size:.85rem; line-height:1.6; color:var(--text-mid); }
+  .dual-card-text strong{color:var(--text)}
+
+  .aso-phases { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem; margin-top:.75rem; }
+  @media(max-width:560px){.aso-phases{grid-template-columns:1fr}}
+  .aso-phase { border:2px solid var(--border); border-radius:14px; padding:1rem; background:var(--surface); position:relative; overflow:hidden; }
+  .aso-phase::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; border-radius:14px 14px 0 0; }
+  .aso-phase:nth-child(1)::before{background:var(--p1)} .aso-phase:nth-child(2)::before{background:var(--p2)} .aso-phase:nth-child(3)::before{background:var(--p3)}
+  .aso-num { font-family:'Nunito',sans-serif; font-size:2.5rem; font-weight:900; opacity:.06; position:absolute; top:.25rem; right:.6rem; line-height:1; }
+  .aso-title { font-family:'Nunito',sans-serif; font-weight:800; margin-bottom:.4rem; font-size:.95rem; }
+  .aso-text { font-size:.8rem; line-height:1.6; color:var(--text-mid); }
+</style>
+</head>
+<body>
+
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+
+<div class="score-panel">
+  <span class="score-icon">⭐</span>
+  <div>
+    <div class="score-label">RESPUESTAS</div>
+    <div class="score-val" id="scoreVal">0 / 0</div>
+  </div>
+</div>
+
+<section class="hero">
+  <span class="hero-emoji">📱</span>
+  <h1>Desarrollo de<br><span class="accent">Apps Móviles</span></h1>
+  <p>Toca cada pregunta para ver la respuesta. Pon a prueba tu conocimiento con los quizzes interactivos antes del examen.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">36 preguntas</span>
+    <span class="hero-pill">3 parciales</span>
+    <span class="hero-pill">Quiz interactivo</span>
+  </div>
+</section>
+
+<nav class="nav">
+  <button class="nav-btn p1 active" onclick="scrollTo('p1')">📘 1er Parcial</button>
+  <button class="nav-btn p2" onclick="scrollTo('p2')">📗 2do Parcial</button>
+  <button class="nav-btn p3" onclick="scrollTo('p3')">📙 3er Parcial</button>
+</nav>
+
+<main class="main">
+
+<div id="p1">
+  <div class="parcial-header">
+    <div class="parcial-icon icon-p1">🧩</div>
+    <div><small class="sm-p1">PARCIAL 01</small><h2>Fundamentos del Desarrollo Móvil</h2></div>
+  </div>
+
+  <div class="q-card p1-card" onclick="toggle(this)">
+    <div class="q-header"><span class="q-num nm-p1">01</span><span class="q-text">¿Qué es un sistema operativo móvil?</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <p class="answer-text">Es el <strong>software base</strong> que gestiona el hardware y los recursos de un dispositivo móvil. Coordina funciones como pantalla táctil, conectividad, sensores y llamadas, y permite ejecutar aplicaciones.</p>
+      <div class="chip-row"><span class="chip ch-p1">Android</span><span class="chip ch-p1">iOS</span><span class="chip">HarmonyOS</span><span class="chip">Windows Phone</span></div>
+    </div>
+  </div>
+
+  <div class="q-card p1-card" onclick="toggle(this)">
+    <div class="q-header"><span class="q-num nm-p1">02</span><span class="q-text">Describe las cinco etapas del desarrollo móvil</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="steps">
+        <div class="step"><div class="step-n sn-p1">1</div><div class="step-text"><span class="step-label">Análisis —</span> Se identifican las necesidades del cliente y los requisitos funcionales y no funcionales.</div></div>
+        <div class="step"><div class="step-n sn-p1">2</div><div class="step-text"><span class="step-label">Diseño —</span> Se definen la arquitectura, la interfaz gráfica y la UX (wireframes, prototipos).</div></div>
+        <div class="step"><div class="step-n sn-p1">3</div><div class="step-text"><span class="step-label">Desarrollo —</span> Se escribe el código fuente usando los frameworks y lenguajes elegidos.</div></div>
+        <div class="step"><div class="step-n sn-p1">4</div><div class="step-text"><span class="step-label">Pruebas —</span> Se verifican funcionamiento, rendimiento y seguridad para detectar y corregir errores.</div></div>
+        <div class="step"><div class="step-n sn-p1">5</div><div class="step-text"><span class="step-label">Mantenimiento —</span> Se actualizan, corrigen y mejoran las funciones tras la publicación.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="q-card p1-card" onclick="toggle(this)">
+    <div class="q-header"><span class="q-num nm-p1">03</span><span class="q-text">Descripción, ventajas y desventajas de los tipos de apps móviles</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <table class="comp-table">
+        <thead><tr><th>TIPO</th><th>DESCRIPCIÓN</th><th>✅ VENTAJAS</th><th>❌ DESVENTAJAS</th></tr></thead>
+        <tbody>
+          <tr><td><strong style="color:var(--p1)">Web</strong></td><td>Corren en el navegador. HTML, CSS, JS.</td><td>Multiplataforma, bajo costo, fácil actualización.</td><td>Sin acceso al hardware nativo, requiere internet.</td></tr>
+          <tr><td><strong style="color:var(--p2)">Híbridas</strong></td><td>Web dentro de un contenedor nativo (Ionic, React Native).</td><td>Un código para varias plataformas, acceso parcial al HW.</td><td>Menor rendimiento, depende del contenedor.</td></tr>
+          <tr><td><strong style="color:var(--p3)">Nativas</strong></td><td>Lenguaje propio del SO (Swift, Kotlin).</td><td>Máximo rendimiento, acceso total al HW, mejor UX.</td><td>Costo alto, código separado por plataforma.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="q-card p1-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p1">04</span><span class="q-text">¿Cuáles son dos desventajas de una app nativa con presupuesto limitado? <em style="color:var(--text-light);font-size:.8rem">(elige 2)</em></span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="mc-options" data-correct="a,d" data-multi="true">
+        <button class="mc-opt" onclick="pickMulti(this)" data-val="a"><span class="mc-letter">A</span>Se necesita un grupo de desarrollo para cada plataforma.</button>
+        <button class="mc-opt" onclick="pickMulti(this)" data-val="b"><span class="mc-letter">B</span>El acceso a las características de hardware es limitado.</button>
+        <button class="mc-opt" onclick="pickMulti(this)" data-val="c"><span class="mc-letter">C</span>Las actualizaciones son difíciles de implementar.</button>
+        <button class="mc-opt" onclick="pickMulti(this)" data-val="d"><span class="mc-letter">D</span>El proceso de desarrollo es lento y costoso.</button>
+      </div>
+      <div class="mc-feedback" id="fb-q4"></div>
+      <button class="mc-reset" id="rst-q4" onclick="resetMC(this)">↺ Reintentar</button>
+    </div>
+  </div>
+
+  <div class="q-card p1-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p1">05</span><span class="q-text">¿Qué modelo de diseño se basa en resultados de pruebas de usabilidad?</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="mc-options" data-correct="b">
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="a"><span class="mc-letter">A</span>Modelo de navegación</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="b"><span class="mc-letter">B</span>Modelo de usuario</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="c"><span class="mc-letter">C</span>Modelo de diseñador</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="d"><span class="mc-letter">D</span>Modelo de desarrollo</button>
+      </div>
+      <div class="mc-feedback" id="fb-q5"></div><button class="mc-reset" id="rst-q5" onclick="resetMC(this)">↺ Reintentar</button>
+    </div>
+  </div>
+
+  <div class="q-card p1-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p1">06</span><span class="q-text">Clasifica cada enunciado como Funcional (F) o No Funcional (NF)</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="fnf-list">
+        <div class="fnf-item"><span class="fnf-text">Registrar cuenta mediante correo electrónico.</span><div class="fnf-btns"><button class="fnf-btn" onclick="pickFNF(this,'F','F')">F</button><button class="fnf-btn" onclick="pickFNF(this,'NF','F')">NF</button></div></div>
+        <div class="fnf-item"><span class="fnf-text">Enviar notificación por correo en cada compra.</span><div class="fnf-btns"><button class="fnf-btn" onclick="pickFNF(this,'F','F')">F</button><button class="fnf-btn" onclick="pickFNF(this,'NF','F')">NF</button></div></div>
+        <div class="fnf-item"><span class="fnf-text">Restablecer contraseña con enlace de recuperación.</span><div class="fnf-btns"><button class="fnf-btn" onclick="pickFNF(this,'F','F')">F</button><button class="fnf-btn" onclick="pickFNF(this,'NF','F')">NF</button></div></div>
+        <div class="fnf-item"><span class="fnf-text">Buscar productos por nombre, categoría o precio.</span><div class="fnf-btns"><button class="fnf-btn" onclick="pickFNF(this,'F','F')">F</button><button class="fnf-btn" onclick="pickFNF(this,'NF','F')">NF</button></div></div>
+        <div class="fnf-item"><span class="fnf-text">Ejecutarse sin problemas en diferentes sistemas operativos.</span><div class="fnf-btns"><button class="fnf-btn" onclick="pickFNF(this,'F','NF')">F</button><button class="fnf-btn" onclick="pickFNF(this,'NF','NF')">NF</button></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="q-card p1-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p1">07</span><span class="q-text">¿Qué mecanismo legal protege un nuevo sistema de compresión de datos?</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="mc-options" data-correct="a">
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="a"><span class="mc-letter">A</span>Patente</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="b"><span class="mc-letter">B</span>Licencia adware</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="c"><span class="mc-letter">C</span>Derechos de distribución</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="d"><span class="mc-letter">D</span>Registro en Derechos de software</button>
+      </div>
+      <div class="mc-feedback" id="fb-q7"></div><button class="mc-reset" id="rst-q7" onclick="resetMC(this)">↺ Reintentar</button>
+    </div>
+  </div>
+
+  <div class="q-card p1-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p1">08</span><span class="q-text">¿Cuál es el propósito del análisis de requerimientos?</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="mc-options" data-correct="c">
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="a"><span class="mc-letter">A</span>Asignar tareas al equipo de desarrollo.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="b"><span class="mc-letter">B</span>Programar los módulos de la app.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="c"><span class="mc-letter">C</span>Comprender las necesidades del cliente.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="d"><span class="mc-letter">D</span>Satisfacer los requerimientos legales aplicables.</button>
+      </div>
+      <div class="mc-feedback" id="fb-q8"></div><button class="mc-reset" id="rst-q8" onclick="resetMC(this)">↺ Reintentar</button>
+    </div>
+  </div>
+
+  <div class="q-card p1-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p1">09</span><span class="q-text">¿Qué herramienta representa gráficamente la distribución de botones y menús en pantalla?</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="mc-options" data-correct="c">
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="a"><span class="mc-letter">A</span>Diagrama de flujo de imágenes.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="b"><span class="mc-letter">B</span>Hojas de estilo.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="c"><span class="mc-letter">C</span>Planos de pantalla (wireframes).</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="d"><span class="mc-letter">D</span>Prototipo funcional.</button>
+      </div>
+      <div class="mc-feedback" id="fb-q9"></div><button class="mc-reset" id="rst-q9" onclick="resetMC(this)">↺ Reintentar</button>
+    </div>
+  </div>
+
+  <div class="q-card p1-card" onclick="toggle(this)">
+    <div class="q-header"><span class="q-num nm-p1">10</span><span class="q-text">¿Qué incluye un framework de desarrollo back-end?</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="answer-box bx-p1">Incluye herramientas para gestionar la <strong>lógica del servidor</strong>: manejo de bases de datos, autenticación de usuarios, gestión de APIs REST, rutas del servidor, librerías de seguridad y módulos para el procesamiento de datos.</div>
+      <div class="chip-row"><span class="chip ch-p1">Bases de datos</span><span class="chip ch-p1">APIs REST</span><span class="chip ch-p1">Autenticación</span><span class="chip ch-p1">Rutas</span><span class="chip ch-p1">Seguridad</span></div>
+    </div>
+  </div>
+
+  <div class="q-card p1-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p1">11</span><span class="q-text">Para mejorar la gestión de recursos, ¿qué se analiza primero?</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="mc-options" data-correct="b">
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="a"><span class="mc-letter">A</span>Las transiciones entre estados y eventos.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="b"><span class="mc-letter">B</span>El tamaño de las imágenes cargadas.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="c"><span class="mc-letter">C</span>La cantidad de rutas y vistas utilizadas.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="d"><span class="mc-letter">D</span>El back-end y front-end de la app.</button>
+      </div>
+      <div class="mc-feedback" id="fb-q11"></div><button class="mc-reset" id="rst-q11" onclick="resetMC(this)">↺ Reintentar</button>
+    </div>
+  </div>
+
+  <div class="q-card p1-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p1">12</span><span class="q-text">Dos ventajas de combinar almacenamiento en la nube y memoria interna <em style="color:var(--text-light);font-size:.8rem">(elige 2)</em></span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="mc-options" data-correct="a,c" data-multi="true">
+        <button class="mc-opt" onclick="pickMulti(this)" data-val="a"><span class="mc-letter">A</span>Acceso a los datos sin conexión.</button>
+        <button class="mc-opt" onclick="pickMulti(this)" data-val="b"><span class="mc-letter">B</span>Aumento de la memoria interna.</button>
+        <button class="mc-opt" onclick="pickMulti(this)" data-val="c"><span class="mc-letter">C</span>Sincronización de los datos.</button>
+        <button class="mc-opt" onclick="pickMulti(this)" data-val="d"><span class="mc-letter">D</span>Confidencialidad de los datos.</button>
+      </div>
+      <div class="mc-feedback" id="fb-q12"></div><button class="mc-reset" id="rst-q12" onclick="resetMC(this)">↺ Reintentar</button>
+    </div>
+  </div>
+</div>
+
+<div id="p2">
+  <div class="parcial-header">
+    <div class="parcial-icon icon-p2">⚙️</div>
+    <div><small class="sm-p2">PARCIAL 02</small><h2>Entorno, Componentes y Compilación</h2></div>
+  </div>
+
+  <div class="q-card p2-card" onclick="toggle(this)">
+    <div class="q-header"><span class="q-num nm-p2">13</span><span class="q-text">¿Para qué se usan npm install y npm run web?</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="dual-cards">
+        <div class="dual-card"><div class="dual-card-title dc-p2">NPM INSTALL</div><div class="dual-card-text">Descarga e instala todas las <strong>dependencias y bibliotecas</strong> definidas en el archivo <code>package.json</code> del proyecto.</div></div>
+        <div class="dual-card"><div class="dual-card-title dc-p2">NPM RUN WEB</div><div class="dual-card-text">Ejecuta la aplicación en <strong>modo web</strong>, iniciando un servidor de desarrollo para visualizarla en el navegador.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="q-card p2-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p2">14</span><span class="q-text">¿Qué comando actualiza bibliotecas y resuelve conflictos de versiones?</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="mc-options" data-correct="b">
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="a"><span class="mc-letter">A</span>run update</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="b"><span class="mc-letter">B</span>npm install</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="c"><span class="mc-letter">C</span>install libs-dev</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="d"><span class="mc-letter">D</span>install -all</button>
+      </div>
+      <div class="mc-feedback" id="fb-q14"></div><button class="mc-reset" id="rst-q14" onclick="resetMC(this)">↺ Reintentar</button>
+    </div>
+  </div>
+
+  <div class="q-card p2-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p2">15</span><span class="q-text">Comando correcto para ejecutar la app en servidor de pruebas</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="mc-options" data-correct="a">
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="a"><span class="mc-letter">A</span>npm run web</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="b"><span class="mc-letter">B</span>npx run server</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="c"><span class="mc-letter">C</span>run dev-server</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="d"><span class="mc-letter">D</span>run npm web</button>
+      </div>
+      <div class="mc-feedback" id="fb-q15"></div><button class="mc-reset" id="rst-q15" onclick="resetMC(this)">↺ Reintentar</button>
+    </div>
+  </div>
+
+  <div class="q-card p2-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p2">16</span><span class="q-text">Error común al instalar el entorno de ejecución</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="mc-options" data-correct="a">
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="a"><span class="mc-letter">A</span>Ejecutar archivos sin permisos de administrador.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="b"><span class="mc-letter">B</span>Verificar la instalación con la terminal de comandos.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="c"><span class="mc-letter">C</span>Descargar archivos desde páginas oficiales.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="d"><span class="mc-letter">D</span>Ejecutar archivos como administrador.</button>
+      </div>
+      <div class="mc-feedback" id="fb-q16"></div><button class="mc-reset" id="rst-q16" onclick="resetMC(this)">↺ Reintentar</button>
+    </div>
+  </div>
+
+  <div class="q-card p2-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p2">17</span><span class="q-text">Verdadero (1) o Falso (0) — Vistas, props y rutas</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="tf-wrap">
+        <div class="tf-row"><span class="tf-index">1</span><span class="tf-text">Las vistas conforman los caminos para conectar las pantallas de navegación.</span><div class="tf-btns"><button class="tf-btn" onclick="pickTF(this,1,0)">1</button><button class="tf-btn" onclick="pickTF(this,0,0)">0</button></div></div>
+        <div class="tf-row"><span class="tf-index">2</span><span class="tf-text"><code>flexDirection</code> define la orientación de los elementos dentro de una vista.</span><div class="tf-btns"><button class="tf-btn" onclick="pickTF(this,1,1)">1</button><button class="tf-btn" onclick="pickTF(this,0,1)">0</button></div></div>
+        <div class="tf-row"><span class="tf-index">3</span><span class="tf-text">Los <code>props</code> permiten crear componentes reutilizables enviando datos desde otros componentes.</span><div class="tf-btns"><button class="tf-btn" onclick="pickTF(this,1,1)">1</button><button class="tf-btn" onclick="pickTF(this,0,1)">0</button></div></div>
+        <div class="tf-row"><span class="tf-index">4</span><span class="tf-text">La documentación del framework solo proporciona guías de instalación y configuración.</span><div class="tf-btns"><button class="tf-btn" onclick="pickTF(this,1,0)">1</button><button class="tf-btn" onclick="pickTF(this,0,0)">0</button></div></div>
+        <div class="tf-row"><span class="tf-index">5</span><span class="tf-text">Al agregar un archivo en el directorio de la app, este se convierte en una nueva ruta.</span><div class="tf-btns"><button class="tf-btn" onclick="pickTF(this,1,1)">1</button><button class="tf-btn" onclick="pickTF(this,0,1)">0</button></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="q-card p2-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p2">18</span><span class="q-text">¿Qué acción evita conflictos de compilación después de configurar el router?</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="mc-options" data-correct="a">
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="a"><span class="mc-letter">A</span>Borrar el caché del proyecto.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="b"><span class="mc-letter">B</span>Borrar el caché del servidor de pruebas.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="c"><span class="mc-letter">C</span>Renombrar todos los archivos.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="d"><span class="mc-letter">D</span>Renombrar el archivo ejecutable.</button>
+      </div>
+      <div class="mc-feedback" id="fb-q18"></div><button class="mc-reset" id="rst-q18" onclick="resetMC(this)">↺ Reintentar</button>
+    </div>
+  </div>
+
+  <div class="q-card p2-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p2">19</span><span class="q-text">¿Qué tipo de vista organiza otras vistas dentro de la interfaz gráfica?</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="mc-options" data-correct="c">
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="a"><span class="mc-letter">A</span>Imagen</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="b"><span class="mc-letter">B</span>Organizador</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="c"><span class="mc-letter">C</span>Contenedor</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="d"><span class="mc-letter">D</span>Pila</button>
+      </div>
+      <div class="mc-feedback" id="fb-q19"></div><button class="mc-reset" id="rst-q19" onclick="resetMC(this)">↺ Reintentar</button>
+    </div>
+  </div>
+
+  <div class="q-card p2-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p2">20</span><span class="q-text">Palabra reservada para que un componente reciba información de otros</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="mc-options" data-correct="c">
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="a"><span class="mc-letter">A</span>params</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="b"><span class="mc-letter">B</span>getter</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="c"><span class="mc-letter">C</span>props</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="d"><span class="mc-letter">D</span>setter</button>
+      </div>
+      <div class="mc-feedback" id="fb-q20"></div><button class="mc-reset" id="rst-q20" onclick="resetMC(this)">↺ Reintentar</button>
+    </div>
+  </div>
+
+  <div class="q-card p2-card" onclick="toggle(this)">
+    <div class="q-header"><span class="q-num nm-p2">21</span><span class="q-text">¿Cuál es la utilidad de translateX y translateY en el objeto "Arrastrar"?</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="answer-box bx-p2">Almacenan la <strong>posición actual del elemento</strong> en los ejes X (horizontal) y Y (vertical) mientras el usuario lo arrastra. Permiten actualizar las coordenadas en tiempo real conforme se detecta el gesto.</div>
+      <div class="chip-row"><span class="chip ch-p2">translateX → eje horizontal</span><span class="chip ch-p2">translateY → eje vertical</span></div>
+    </div>
+  </div>
+
+  <div class="q-card p2-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p2">22</span><span class="q-text">En la app "Pegatinas", función principal del "Selector de imágenes"</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="mc-options" data-correct="a">
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="a"><span class="mc-letter">A</span>Acceder a la galería del dispositivo para elegir una imagen.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="b"><span class="mc-letter">B</span>Establecer la imagen predeterminada en el visor.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="c"><span class="mc-letter">C</span>Reemplazar el ícono del botón "Escoger una imagen".</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="d"><span class="mc-letter">D</span>Dejar a libre elección del usuario la imagen.</button>
+      </div>
+      <div class="mc-feedback" id="fb-q22"></div><button class="mc-reset" id="rst-q22" onclick="resetMC(this)">↺ Reintentar</button>
+    </div>
+  </div>
+
+  <div class="q-card p2-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p2">23</span><span class="q-text">En "Pegatinas", ¿qué opción elegir para usar una imagen del dispositivo?</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="mc-options" data-correct="c">
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="a"><span class="mc-letter">A</span>Escanear con la cámara.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="b"><span class="mc-letter">B</span>Usar esta imagen.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="c"><span class="mc-letter">C</span>Elegir una imagen.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="d"><span class="mc-letter">D</span>Importar una imagen.</button>
+      </div>
+      <div class="mc-feedback" id="fb-q23"></div><button class="mc-reset" id="rst-q23" onclick="resetMC(this)">↺ Reintentar</button>
+    </div>
+  </div>
+
+  <div class="q-card p2-card" onclick="toggle(this)">
+    <div class="q-header"><span class="q-num nm-p2">24</span><span class="q-text">¿Cuál es la diferencia entre eas login y eas init?</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="dual-cards">
+        <div class="dual-card"><div class="dual-card-title dc-p2">EAS LOGIN</div><div class="dual-card-text">Inicia sesión en <strong>Expo Application Services</strong>, autenticando al desarrollador para usar los servicios en la nube.</div></div>
+        <div class="dual-card"><div class="dual-card-title dc-p2">EAS INIT</div><div class="dual-card-text">Inicializa y configura el proyecto en EAS, vinculándolo con la cuenta del desarrollador y generando su ID único.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="q-card p2-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p2">25</span><span class="q-text">¿Por qué la compilación es requisito para compartir la app?</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="mc-options" data-correct="c">
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="a"><span class="mc-letter">A</span>Porque crea una cuenta de desarrollador en las tiendas.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="b"><span class="mc-letter">B</span>Porque ajusta las bibliotecas para cada sistema operativo.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="c"><span class="mc-letter">C</span>Porque garantiza la compatibilidad e instalación sin errores.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="d"><span class="mc-letter">D</span>Porque verifica que la app no tenga errores de programación.</button>
+      </div>
+      <div class="mc-feedback" id="fb-q25"></div><button class="mc-reset" id="rst-q25" onclick="resetMC(this)">↺ Reintentar</button>
+    </div>
+  </div>
+</div>
+
+<div id="p3">
+  <div class="parcial-header">
+    <div class="parcial-icon icon-p3">🚀</div>
+    <div><small class="sm-p3">PARCIAL 03</small><h2>Depuración, Versiones y Publicación</h2></div>
+  </div>
+
+  <div class="q-card p3-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p3">26</span><span class="q-text">Verdadero (1) o Falso (0) — Errores, versiones y documentación</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="tf-wrap">
+        <div class="tf-row"><span class="tf-index">1</span><span class="tf-text">Los errores de sintaxis se presentan en líneas que no cumplen las reglas de escritura.</span><div class="tf-btns"><button class="tf-btn" onclick="pickTF(this,1,1)">1</button><button class="tf-btn" onclick="pickTF(this,0,1)">0</button></div></div>
+        <div class="tf-row"><span class="tf-index">2</span><span class="tf-text">Un sistema controlador de versiones permite conocer el estado de las variables durante la ejecución.</span><div class="tf-btns"><button class="tf-btn" onclick="pickTF(this,1,0)">1</button><button class="tf-btn" onclick="pickTF(this,0,0)">0</button></div></div>
+        <div class="tf-row"><span class="tf-index">3</span><span class="tf-text">La documentación solo registra errores durante el desarrollo y pruebas.</span><div class="tf-btns"><button class="tf-btn" onclick="pickTF(this,1,0)">1</button><button class="tf-btn" onclick="pickTF(this,0,0)">0</button></div></div>
+        <div class="tf-row"><span class="tf-index">4</span><span class="tf-text">El nombre "viajes delUsuaio.js" es adecuado para un componente de lista desplegable.</span><div class="tf-btns"><button class="tf-btn" onclick="pickTF(this,1,0)">1</button><button class="tf-btn" onclick="pickTF(this,0,0)">0</button></div></div>
+        <div class="tf-row"><span class="tf-index">5</span><span class="tf-text">Los comentarios multilínea inician con dos diagonales (//).</span><div class="tf-btns"><button class="tf-btn" onclick="pickTF(this,1,0)">1</button><button class="tf-btn" onclick="pickTF(this,0,0)">0</button></div></div>
+        <div class="tf-row"><span class="tf-index">6</span><span class="tf-text">Mantener actualizadas las dependencias previene errores de compatibilidad.</span><div class="tf-btns"><button class="tf-btn" onclick="pickTF(this,1,1)">1</button><button class="tf-btn" onclick="pickTF(this,0,1)">0</button></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="q-card p3-card" onclick="toggle(this)">
+    <div class="q-header"><span class="q-num nm-p3">27</span><span class="q-text">Procedimiento para usar un sistema controlador de versiones (6 etapas)</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="steps">
+        <div class="step"><div class="step-n sn-p3">1</div><div class="step-text"><span class="step-label">Inicializar el repositorio —</span> Se crea el repositorio local con <code>git init</code>.</div></div>
+        <div class="step"><div class="step-n sn-p3">2</div><div class="step-text"><span class="step-label">Conectar al remoto —</span> Se vincula con un repositorio en la nube (GitHub, GitLab).</div></div>
+        <div class="step"><div class="step-n sn-p3">3</div><div class="step-text"><span class="step-label">Realizar cambios —</span> El desarrollador edita, agrega o elimina archivos del proyecto.</div></div>
+        <div class="step"><div class="step-n sn-p3">4</div><div class="step-text"><span class="step-label">Registrar (commit) —</span> Se guarda el historial con un mensaje descriptivo.</div></div>
+        <div class="step"><div class="step-n sn-p3">5</div><div class="step-text"><span class="step-label">Subir al remoto (push) —</span> Se sincroniza el repositorio local con el remoto.</div></div>
+        <div class="step"><div class="step-n sn-p3">6</div><div class="step-text"><span class="step-label">Revertir o fusionar —</span> Se recupera una versión anterior o se combinan ramas en caso de conflictos.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="q-card p3-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p3">28</span><span class="q-text">¿Cuál es el propósito de la depuración en el desarrollo de apps?</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="mc-options" data-correct="b">
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="a"><span class="mc-letter">A</span>Crear un repositorio local para el proyecto.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="b"><span class="mc-letter">B</span>Estudiar y corregir en el código fuente.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="c"><span class="mc-letter">C</span>Traducir el código a lenguaje ensamblador.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="d"><span class="mc-letter">D</span>Practicar y aprender sobre los errores cometidos.</button>
+      </div>
+      <div class="mc-feedback" id="fb-q28"></div><button class="mc-reset" id="rst-q28" onclick="resetMC(this)">↺ Reintentar</button>
+    </div>
+  </div>
+
+  <div class="q-card p3-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p3">29</span><span class="q-text">¿Cuál es una ventaja de usar un sistema de control de versiones?</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="mc-options" data-correct="a">
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="a"><span class="mc-letter">A</span>Revertir cambios sin perder los avances recientes.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="b"><span class="mc-letter">B</span>Reducir el tamaño del código fuente.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="c"><span class="mc-letter">C</span>Proteger la app automáticamente contra virus.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="d"><span class="mc-letter">D</span>Tener el control de los cambios, mejoras y fallas.</button>
+      </div>
+      <div class="mc-feedback" id="fb-q29"></div><button class="mc-reset" id="rst-q29" onclick="resetMC(this)">↺ Reintentar</button>
+    </div>
+  </div>
+
+  <div class="q-card p3-card" onclick="toggle(this)">
+    <div class="q-header"><span class="q-num nm-p3">30</span><span class="q-text">¿En qué consiste el proceso de mantenimiento de una app?</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="answer-box bx-p3">Consiste en dar <strong>seguimiento continuo</strong> a la app tras su publicación. Incluye corregir errores, actualizar bibliotecas, mejorar el rendimiento, adaptar la app a nuevas versiones del SO y agregar funcionalidades según la retroalimentación de los usuarios.</div>
+    </div>
+  </div>
+
+  <div class="q-card p3-card" onclick="toggle(this)">
+    <div class="q-header"><span class="q-num nm-p3">31</span><span class="q-text">¿Cuáles son las tres fases del proceso ASO?</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="aso-phases">
+        <div class="aso-phase"><div class="aso-num">1</div><div class="aso-title" style="color:var(--p1)">Investigación</div><div class="aso-text">Análisis de palabras clave, competencia y comportamiento del público objetivo.</div></div>
+        <div class="aso-phase"><div class="aso-num">2</div><div class="aso-title" style="color:var(--p2)">Optimización</div><div class="aso-text">Aplicar resultados al título, descripción, íconos y capturas de la ficha técnica.</div></div>
+        <div class="aso-phase"><div class="aso-num">3</div><div class="aso-title" style="color:var(--p3)">Seguimiento</div><div class="aso-text">Monitorear métricas de descargas, valoraciones y conversiones para mejorar continuamente.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="q-card p3-card" onclick="toggle(this)">
+    <div class="q-header"><span class="q-num nm-p3">32</span><span class="q-text">8 pasos para distribuir una app en una tienda de aplicaciones</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="steps">
+        <div class="step"><div class="step-n sn-p3">1</div><div class="step-text">Crear una cuenta de desarrollador en la tienda (Google Play / App Store).</div></div>
+        <div class="step"><div class="step-n sn-p3">2</div><div class="step-text">Compilar la aplicación generando el archivo instalable (APK / IPA).</div></div>
+        <div class="step"><div class="step-n sn-p3">3</div><div class="step-text">Crear la ficha técnica (nombre, descripción, categoría, capturas).</div></div>
+        <div class="step"><div class="step-n sn-p3">4</div><div class="step-text">Configurar precios y países de distribución.</div></div>
+        <div class="step"><div class="step-n sn-p3">5</div><div class="step-text">Definir la clasificación de contenido (edad y permisos).</div></div>
+        <div class="step"><div class="step-n sn-p3">6</div><div class="step-text">Subir el archivo compilado de la aplicación.</div></div>
+        <div class="step"><div class="step-n sn-p3">7</div><div class="step-text">Enviar la app para revisión y aprobación por la tienda.</div></div>
+        <div class="step"><div class="step-n sn-p3">8</div><div class="step-text">Publicar y dar seguimiento a la retroalimentación de los usuarios.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="q-card p3-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p3">33</span><span class="q-text">¿Por qué es importante el mantenimiento tras la distribución?</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="mc-options" data-correct="c">
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="a"><span class="mc-letter">A</span>Actualizar el ícono de la app mensualmente.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="b"><span class="mc-letter">B</span>Clasificar errores en tiempo de ejecución por prioridad.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="c"><span class="mc-letter">C</span>Asegurar el funcionamiento y garantizar la experiencia de usuario.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="d"><span class="mc-letter">D</span>Comprobar el funcionamiento y dar seguimiento a la retro de usuarios.</button>
+      </div>
+      <div class="mc-feedback" id="fb-q33"></div><button class="mc-reset" id="rst-q33" onclick="resetMC(this)">↺ Reintentar</button>
+    </div>
+  </div>
+
+  <div class="q-card p3-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p3">34</span><span class="q-text">¿Qué tipo de cuenta elegir al registrarse como desarrollador freelance?</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="mc-options" data-correct="a">
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="a"><span class="mc-letter">A</span>Individual.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="b"><span class="mc-letter">B</span>Organizacional.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="c"><span class="mc-letter">C</span>Beta.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="d"><span class="mc-letter">D</span>De libre acceso.</button>
+      </div>
+      <div class="mc-feedback" id="fb-q34"></div><button class="mc-reset" id="rst-q34" onclick="resetMC(this)">↺ Reintentar</button>
+    </div>
+  </div>
+
+  <div class="q-card p3-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p3">35</span><span class="q-text">Una app de noticias que pide cámara, micrófono y contactos viola...</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="mc-options" data-correct="d">
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="a"><span class="mc-letter">A</span>Contenido restringido.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="b"><span class="mc-letter">B</span>Privacidad.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="c"><span class="mc-letter">C</span>Ficha y promoción.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="d"><span class="mc-letter">D</span>Exceso de permisos.</button>
+      </div>
+      <div class="mc-feedback" id="fb-q35"></div><button class="mc-reset" id="rst-q35" onclick="resetMC(this)">↺ Reintentar</button>
+    </div>
+  </div>
+
+  <div class="q-card p3-card" onclick="noToggle(event,this)">
+    <div class="q-header" onclick="toggle(this.parentElement)"><span class="q-num nm-p3">36</span><span class="q-text">Si se omite la descripción detallada en la ficha técnica, ¿qué ocurre?</span><span class="q-toggle">+</span></div>
+    <div class="q-body">
+      <div class="mc-options" data-correct="c">
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="a"><span class="mc-letter">A</span>Se publicará con un cargo adicional.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="b"><span class="mc-letter">B</span>El proceso tardará más de un mes.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="c"><span class="mc-letter">C</span>La aprobación por la tienda será rechazada.</button>
+        <button class="mc-opt" onclick="pickSingle(this)" data-val="d"><span class="mc-letter">D</span>La tienda denegará la distribución.</button>
+      </div>
+      <div class="mc-feedback" id="fb-q36"></div><button class="mc-reset" id="rst-q36" onclick="resetMC(this)">↺ Reintentar</button>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+let correct=0,total=0;
+function updateScore(ok){total++;if(ok)correct++;document.getElementById('scoreVal').textContent=correct+' / '+total;}
+function toggle(card){card.classList.toggle('open');if(card.classList.contains('open')){card.querySelectorAll('.step').forEach((s,i)=>setTimeout(()=>s.classList.add('visible'),i*80));}}
+function noToggle(e,c){}
+function getNum(card){return card.querySelector('.q-num').textContent.trim().replace(/^0/,'');}
+function pickSingle(btn){
+  const c=btn.closest('.mc-options');if(c.classList.contains('revealed'))return;
+  c.classList.add('revealed');const ok=btn.dataset.val===c.dataset.correct;
+  btn.classList.add(ok?'correct':'wrong');
+  if(!ok)c.querySelectorAll('.mc-opt').forEach(o=>{if(o.dataset.val===c.dataset.correct)o.classList.add('correct');});
+  showFB(c,ok);updateScore(ok);
+}
+function pickMulti(btn){
+  const c=btn.closest('.mc-options');if(c.classList.contains('revealed'))return;
+  btn.classList.toggle('sel-m');
+  btn.style.borderColor=btn.classList.contains('sel-m')?'var(--p1-mid)':'';
+  btn.style.background=btn.classList.contains('sel-m')?'var(--p1-light)':'';
+  const need=c.dataset.correct.split(',').length;
+  const sel=[...c.querySelectorAll('.sel-m')];
+  if(sel.length>=need){
+    c.classList.add('revealed');
+    const corr=c.dataset.correct.split(',').sort();
+    const chosen=sel.map(b=>b.dataset.val).sort();
+    const ok=JSON.stringify(corr)===JSON.stringify(chosen);
+    c.querySelectorAll('.mc-opt').forEach(o=>{o.style.borderColor='';o.style.background='';if(corr.includes(o.dataset.val))o.classList.add('correct');else if(chosen.includes(o.dataset.val))o.classList.add('wrong');});
+    showFB(c,ok);updateScore(ok);
+  }
+}
+function showFB(c,ok){
+  const n=getNum(c.closest('.q-card'));
+  const fb=document.getElementById('fb-q'+n);const rst=document.getElementById('rst-q'+n);
+  if(fb){fb.textContent=ok?'✓ ¡Correcto! 🎉':'✗ Incorrecto. La respuesta correcta está en verde.';fb.className='mc-feedback show '+(ok?'ok':'fail');}
+  if(rst)rst.classList.add('show');
+}
+function resetMC(rstBtn){
+  const card=rstBtn.closest('.q-card');const c=card.querySelector('.mc-options');
+  c.classList.remove('revealed');
+  c.querySelectorAll('.mc-opt').forEach(o=>{o.classList.remove('correct','wrong','sel-m');o.style.borderColor='';o.style.background='';});
+  const n=getNum(card);const fb=document.getElementById('fb-q'+n);
+  if(fb){fb.className='mc-feedback';fb.textContent='';}rstBtn.classList.remove('show');
+}
+function pickTF(btn,chosen,correct){
+  const btns=btn.closest('.tf-btns');if(btns.classList.contains('done'))return;
+  btns.classList.add('done');const ok=chosen===correct;
+  btn.classList.add(ok?'correct':'wrong');
+  if(!ok)[...btns.children].forEach(b=>{if(parseInt(b.textContent)===correct)b.classList.add('correct');});
+  updateScore(ok);
+}
+function pickFNF(btn,chosen,correct){
+  const btns=btn.closest('.fnf-btns');if(btns.classList.contains('done'))return;
+  btns.classList.add('done');const ok=chosen===correct;
+  btn.classList.add(ok?'correct':'wrong');
+  if(!ok)[...btns.children].forEach(b=>{if(b.textContent===correct)b.classList.add('correct');});
+  updateScore(ok);
+}
+function scrollTo(id){document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'});}
+window.addEventListener('scroll',()=>{
+  const doc=document.documentElement;
+  document.getElementById('progressBar').style.width=(doc.scrollTop/(doc.scrollHeight-doc.clientHeight)*100)+'%';
+  ['p1','p2','p3'].forEach((sid,i)=>{
+    const el=document.getElementById(sid);if(!el)return;
+    const r=el.getBoundingClientRect();
+    if(r.top<=90&&r.bottom>90)document.querySelectorAll('.nav-btn').forEach((b,j)=>b.classList.toggle('active',i===j));
+  });
+});
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in-view');obs.unobserve(e.target);}});},{threshold:0.07});
+document.querySelectorAll('.q-card').forEach(c=>obs.observe(c));
+</script>
+</body>
+</html>
